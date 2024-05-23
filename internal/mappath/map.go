@@ -209,6 +209,12 @@ func MustUnmarshalMap(v string) *Map {
 	return result
 }
 
+// FromJSONMap creates a new Map from a map[string]any.
+// It expects that the internal map is already a valid json map (composed only by arrays, maps and scalars).
+func FromJSONMap(m map[string]any) *Map {
+	return &Map{m: m}
+}
+
 // MustUnmarshalScalar parses the json and returns the scalar value used for tests.
 func MustUnmarshalScalar(v string) PathValue {
 	var result any
