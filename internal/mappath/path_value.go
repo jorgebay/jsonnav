@@ -1,5 +1,9 @@
 package mappath
 
+import (
+	"github.com/samber/lo"
+)
+
 // PathValue represents the result of a path search expression over unmarshalled json.
 // For example: `value.Get("a.b")` will access the value in the object at the path "a.b".
 //
@@ -93,3 +97,47 @@ type PathValue interface {
 type deleteType int
 
 const deleteValue deleteType = -1
+
+// EmptyOrEqualToDefault checks whether the given value is either empty or equal to the provided default value.
+// It supports various types including bool, string, float, objects, and arrays. It returns `true` if `value` is
+// empty or equal to `defaultValue` and`false` otherwise.
+//
+// - Returns true if:
+//   - `value` does not exist, is empty, or equals `defaultValue`.
+//   - For objects, it recursively checks all keys in the object.
+//   - For arrays, it recursively checks all elements.
+func EmptyOrEqualToDefault(value, defaultValue PathValue) bool {
+	if !value.Exists() || !defaultValue.Exists() || value.IsEmpty() {
+		return true
+	}
+	if value.IsBool() || value.IsString() || value.IsFloat() {
+		if value.Value() == defaultValue.Value() {
+			return true
+		}
+	}
+	if value.IsObject() && defaultValue.IsObject() {
+		defaultValueMap := defaultValue.Map()
+		for key, defaultItem := range defaultValueMap {
+			if !lo.HasKey(value.Map(), key) {
+				return false
+			}
+			item := value.Get(key)
+			if !EmptyOrEqualToDefault(item, defaultItem) {
+				return false
+			}
+		}
+		return true
+	}
+	if value.IsArray() && defaultValue.IsArray() {
+		valueArray := value.Array()
+		defaultValueArray := defaultValue.Array()
+		for i, defaultItem := range defaultValueArray {
+			item := valueArray[i]
+			if !EmptyOrEqualToDefault(item, defaultItem) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
