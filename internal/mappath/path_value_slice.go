@@ -134,6 +134,16 @@ func (s PathValueSlice) applyChildConditionPath(childPath string) PathValueSlice
 
 func (s PathValueSlice) Set(path string, rawValue any) PathValue {
 	key, remainingPath, _ := strings.Cut(path, ".")
+
+	// Apply the rawValue to all slice elements
+	if key == "#" {
+		result := s
+		for index, element := range result {
+			result[index] = element.Set(remainingPath, rawValue)
+		}
+		return result
+	}
+
 	index, err := strconv.Atoi(key)
 	if err != nil {
 		// expected an index for a PathValueSlice: noop

@@ -122,6 +122,31 @@ func TestMap_Set(t *testing.T) {
 			map[string]any{"name": "Bob", "lastName": "Smith"},
 			value.Get("nestedArray.#(name=Bob)").Value())
 	})
+
+	t.Run("should set all elements of an array when using #", func(t *testing.T) {
+		value := MustUnmarshalMap(testJSON)
+
+		value.Set("nestedArray.#.name", "Chuck Norris")
+		require.Equal(
+			t,
+			[]any{"Chuck Norris", "Chuck Norris"},
+			value.Get("nestedArray.#.name").Value())
+
+		// nested path
+		newAge := float64(42)
+		value.Set("nestedArray.#.attrs.age", newAge)
+		require.Equal(
+			t,
+			[]any{newAge, newAge},
+			value.Get("nestedArray.#.attrs.age").Value())
+
+		// delete value
+		value.Set("nestedArray.#.attrs", deleteValue)
+		require.Equal(
+			t,
+			[]any{map[string]any{"name": "Chuck Norris"}, map[string]any{"name": "Chuck Norris"}},
+			value.Get("nestedArray").Value())
+	})
 }
 
 func TestMap_Delete(t *testing.T) {
@@ -136,5 +161,15 @@ func TestMap_Delete(t *testing.T) {
 		require.Equal(t, true, value.Get("bool").Bool())
 		require.Equal(t, []any{"b"}, value.Get("array").Value())
 		require.Equal(t, map[string]any{"name": "Alice"}, value.Get("nestedArray.#(name=Alice)").Value())
+
+		// Delete all nested elements in an array
+		value = MustUnmarshalMap(testJSON)
+		value.Delete("nestedArray.#.name")
+		require.Equal(t,
+			[]any{
+				map[string]any{"attrs": map[string]any{"age": float64(33)}},
+				map[string]any{},
+			},
+			value.Get("nestedArray").Value())
 	})
 }
