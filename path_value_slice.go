@@ -1,4 +1,4 @@
-package mappath
+package jsonnav
 
 import (
 	"fmt"

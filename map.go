@@ -1,10 +1,9 @@
-package mappath
+package jsonnav
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
-
-	"github.com/kong/koko/internal/json"
 )
 
 type Map struct {

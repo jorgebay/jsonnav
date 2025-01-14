@@ -1,4 +1,4 @@
-package mappath
+package jsonnav
 
 import (
 	"testing"
@@ -35,7 +35,7 @@ func TestMap_Unmarshal(t *testing.T) {
 
 	t.Run("should fail when it's not a valid map", func(t *testing.T) {
 		_, err := UnmarshalMap(`true`)
-		require.ErrorContains(t, err, "error found in #1 byte")
+		require.ErrorContains(t, err, "cannot unmarshal bool into Go value of type")
 	})
 }
 
