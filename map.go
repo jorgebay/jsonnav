@@ -1,69 +1,82 @@
 package jsonnav
 
 import (
-	"encoding/json"
 	"strconv"
 	"strings"
 )
 
+// Map represents a JSON object.
 type Map struct {
 	m map[string]any
 }
 
+// Exists returns true if the value is defined.
 func (m *Map) Exists() bool {
 	return true
 }
 
+// IsEmpty returns true if the map does not have any items.
 func (m *Map) IsEmpty() bool {
 	return len(m.m) == 0
 }
 
+// IsNull returns false for maps.
 func (*Map) IsNull() bool {
 	return false
 }
 
+// IsArray returns false for maps.
 func (*Map) IsArray() bool {
 	return false
 }
 
+// IsObject returns true for maps.
 func (*Map) IsObject() bool {
 	return true
 }
 
+// IsString returns false for maps.
 func (*Map) IsString() bool {
 	return false
 }
 
+// IsFloat returns false for maps.
 func (*Map) IsFloat() bool {
 	return false
 }
 
+// IsBool returns false for maps.
 func (*Map) IsBool() bool {
 	return false
 }
 
+// IsInt returns false for maps.
 func (m *Map) Bool() bool {
 	return false
 }
 
+// Float returns 0 for maps.
 func (m *Map) Float() float64 {
 	return 0
 }
 
+// Int returns 0 for maps.
 func (m *Map) Int() int64 {
 	return 0
 }
 
+// String returns an empty string for maps.
 func (m *Map) String() string {
 	return ""
 }
 
+// Value returns the underlying map.
 func (m *Map) Value() any {
 	return m.m
 }
 
 // Get searches json for the specified path.
-func (m *Map) Get(path string) PathValue {
+func (m *Map) Get(path string) Value {
 	if len(path) == 0 {
 		panic("invalid zero length")
 	}
@@ -85,9 +98,9 @@ func (m *Map) Get(path string) PathValue {
 		return m.Get(remainingPath)
 	}
 
-	var value PathValue
+	var value Value
 	if rawValue, ok := m.m[key]; ok {
-		value = toPathValue(rawValue)
+		value = mustToPathValue(rawValue)
 	} else {
 		value = undefinedScalar
 	}
@@ -119,7 +132,7 @@ func areEqualFromCondition(value any, expected string) bool {
 	return false
 }
 
-func (m *Map) Set(path string, rawValue any) PathValue {
+func (m *Map) Set(path string, rawValue any) Value {
 	key, remainingPath, _ := strings.Cut(path, ".")
 	if remainingPath == "" {
 		m.setLeaf(key, rawValue)
@@ -130,11 +143,11 @@ func (m *Map) Set(path string, rawValue any) PathValue {
 		m.m[key] = createRawChild(remainingPath)
 	}
 
-	m.m[key] = toPathValue(m.m[key]).Set(remainingPath, rawValue).Value()
+	m.m[key] = mustToPathValue(m.m[key]).Set(remainingPath, rawValue).Value()
 	return m
 }
 
-func (m *Map) Delete(path string) PathValue {
+func (m *Map) Delete(path string) Value {
 	return m.Set(path, deleteValue)
 }
 
@@ -167,72 +180,15 @@ func toJSONValue(rawValue any) any {
 	return rawValue
 }
 
-func (m *Map) Array() PathValueSlice {
-	return PathValueSlice{}
+func (m *Map) Array() Slice {
+	return Slice{}
 }
 
-func (m *Map) Map() map[string]PathValue {
-	newMap := make(map[string]PathValue, len(m.m))
+func (m *Map) Map() map[string]Value {
+	newMap := make(map[string]Value, len(m.m))
 	for k, v := range m.m {
-		newMap[k] = toPathValue(v)
+		newMap[k] = mustToPathValue(v)
 	}
 
 	return newMap
-}
-
-// UnmarshalMap parses the json and returns the map.
-func UnmarshalMap(v string) (*Map, error) {
-	result := Map{}
-	if err := json.Unmarshal([]byte(v), &result.m); err != nil {
-		return nil, err
-	}
-	return &result, nil
-}
-
-// MarshalMap returns the json string for the provided map.
-func MarshalMap(m *Map) (string, error) {
-	blob, err := json.Marshal(m.m)
-	if err != nil {
-		return "", err
-	}
-
-	return string(blob), nil
-}
-
-// MustUnmarshalMap is a non-fallible version of UnmarshalMap() used for static variables and tests.
-func MustUnmarshalMap(v string) *Map {
-	result, err := UnmarshalMap(v)
-	if err != nil {
-		panic(err)
-	}
-	return result
-}
-
-// FromJSONMap creates a new Map from a map[string]any.
-// It expects that the internal map is already a valid json map (composed only by arrays, maps and scalars).
-func FromJSONMap(m map[string]any) *Map {
-	return &Map{m: m}
-}
-
-// MustUnmarshalScalar parses the json and returns the scalar value used for tests.
-func MustUnmarshalScalar(v string) PathValue {
-	var result any
-	if err := json.Unmarshal([]byte(v), &result); err != nil {
-		panic(err)
-	}
-
-	if result == nil {
-		return &scalarValue{v: nil}
-	}
-
-	switch result.(type) {
-	case string:
-		return &scalarValue{v: result}
-	case bool:
-		return &scalarValue{v: result}
-	case float64:
-		return &scalarValue{v: result}
-	}
-
-	panic("invalid scalar")
 }

@@ -4,27 +4,27 @@ import (
 	"strconv"
 )
 
-// scalarValue represents either a boolean, float64 or string type. Inner value can be nil.
-type scalarValue struct {
+// scalar represents either a boolean, float64 or string type. Inner value can be nil.
+type scalar struct {
 	v any
 }
 
 // Represents an undefined JSON value.
-var undefinedScalar PathValue = &scalarValue{v: nil}
+var undefinedScalar Value = &scalar{v: nil}
 
-func (s *scalarValue) Exists() bool {
+func (s *scalar) Exists() bool {
 	return s != undefinedScalar
 }
 
-func (s *scalarValue) IsArray() bool {
+func (s *scalar) IsArray() bool {
 	return false
 }
 
-func (*scalarValue) IsObject() bool {
+func (*scalar) IsObject() bool {
 	return false
 }
 
-func (s *scalarValue) IsString() bool {
+func (s *scalar) IsString() bool {
 	if s.v == nil {
 		return false
 	}
@@ -34,7 +34,7 @@ func (s *scalarValue) IsString() bool {
 	return false
 }
 
-func (s *scalarValue) IsFloat() bool {
+func (s *scalar) IsFloat() bool {
 	if s.v == nil {
 		return false
 	}
@@ -44,7 +44,7 @@ func (s *scalarValue) IsFloat() bool {
 	return false
 }
 
-func (s *scalarValue) IsBool() bool {
+func (s *scalar) IsBool() bool {
 	if s.v == nil {
 		return false
 	}
@@ -54,19 +54,19 @@ func (s *scalarValue) IsBool() bool {
 	return false
 }
 
-func (s *scalarValue) IsEmpty() bool {
+func (s *scalar) IsEmpty() bool {
 	return s.v == nil || s.v == ""
 }
 
-func (s *scalarValue) IsNull() bool {
+func (s *scalar) IsNull() bool {
 	return s.v == nil
 }
 
-func (s *scalarValue) Bool() bool {
+func (s *scalar) Bool() bool {
 	return s.v == true
 }
 
-func (s *scalarValue) Float() float64 {
+func (s *scalar) Float() float64 {
 	if s.v == nil {
 		return 0
 	}
@@ -81,7 +81,7 @@ func (s *scalarValue) Float() float64 {
 	}
 }
 
-func (s *scalarValue) Int() int64 {
+func (s *scalar) Int() int64 {
 	if s.v == nil {
 		return 0
 	}
@@ -96,7 +96,7 @@ func (s *scalarValue) Int() int64 {
 	}
 }
 
-func (s *scalarValue) String() string {
+func (s *scalar) String() string {
 	if s.v == nil {
 		return ""
 	}
@@ -112,11 +112,11 @@ func (s *scalarValue) String() string {
 	}
 }
 
-func (s *scalarValue) Value() any {
+func (s *scalar) Value() any {
 	return s.v
 }
 
-func (s *scalarValue) Get(path string) PathValue {
+func (s *scalar) Get(path string) Value {
 	if path[0] == '=' {
 		// Equality check
 		if path[1] == '"' { // string literal
@@ -131,23 +131,23 @@ func (s *scalarValue) Get(path string) PathValue {
 	return undefinedScalar
 }
 
-func (s *scalarValue) Set(_ string, _ any) PathValue {
+func (s *scalar) Set(_ string, _ any) Value {
 	// Scalar values can't be set by path: noop
 	return s
 }
 
-func (s *scalarValue) Delete(_ string) PathValue {
+func (s *scalar) Delete(_ string) Value {
 	// Scalar values can't be deleted by path: noop
 	return s
 }
 
-func (s *scalarValue) Array() PathValueSlice {
+func (s *scalar) Array() Slice {
 	if s.v == nil {
-		return []PathValue{}
+		return []Value{}
 	}
-	return []PathValue{s}
+	return []Value{s}
 }
 
-func (s *scalarValue) Map() map[string]PathValue {
-	return map[string]PathValue{}
+func (s *scalar) Map() map[string]Value {
+	return map[string]Value{}
 }

@@ -1,20 +1,15 @@
 package jsonnav
 
-// PathValue represents the result of a path search expression over unmarshalled json.
+// Value represents the result of a path search expression over a json element.
 // For example: `value.Get("a.b")` will access the value in the object at the path "a.b".
 //
 // Get() and `Set()` methods partially supports GJSON syntax: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
 //
 // Not supported expressions:
-// - Nested conditions like "friends.#(nets.#(=="fb"))#"
-// - Tilde comparison
-//
-// Background: We used to parse json over and over again using gjson library as part of config version compatibility.
-// This had a significant impact on CPU and memory resource usage.
-// This structure tries to bridge the gap between dealing with raw maps and avoiding to use an external library and
-// parsing over and over.
-type PathValue interface {
-	// Exists returns true if value exists and it's not null.
+// - Nested conditions like "friends.#(nets.#(=="fb"))#".
+// - Tilde comparison.
+type Value interface {
+	// Exists returns true if value exists.
 	Exists() bool
 
 	// IsEmpty returns true if the value is
@@ -68,25 +63,25 @@ type PathValue interface {
 	Value() any
 
 	// Get searches for the specified path.
-	Get(path string) PathValue
+	Get(path string) Value
 
 	// Set sets the value in the provided path and returns the modified instance.
 	// If the path does not exist, it will be created.
-	Set(path string, rawValue any) PathValue
+	Set(path string, rawValue any) Value
 
 	// Delete deletes the value in the provided path and returns the modified instance.
-	Delete(path string) PathValue
+	Delete(path string) Value
 
 	// Array returns back an array of values.
 	// If the result represents a null value or is non-existent, then an empty
 	// array will be returned.
 	// If the result is not a JSON array, the return value will be an
 	// array containing one result.
-	Array() PathValueSlice
+	Array() Slice
 
 	// Map returns back a map of values. The result should be a JSON object.
 	// If the result is not a JSON object, the return value will be an empty map.
-	Map() map[string]PathValue
+	Map() map[string]Value
 }
 
 // An internal type to mark the set operation as a delete.
