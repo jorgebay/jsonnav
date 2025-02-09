@@ -1,6 +1,7 @@
 # JSONNAV
 
-jsonnav is a Go package for accessing, navigating and manipulating values from an untyped json document.
+jsonnav is a [Go package](https://pkg.go.dev/github.com/jorgebay/jsonnav#section-documentation) for accessing,
+navigating and manipulating values from an untyped json document.
 
 ## Features
 
@@ -17,6 +18,8 @@ It supports retrieving deeply nested values safely, as well as iterating over ar
 ```shell
 go get github.com/jorgebay/jsonnav
 ```
+
+[![Build](https://github.com/jorgebay/jsonnav/actions/workflows/test.yml/badge.svg)](https://github.com/jorgebay/jsonnav/actions/workflows/test.yml)
 
 ## Usage
 
