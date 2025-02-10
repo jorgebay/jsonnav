@@ -6,7 +6,7 @@ navigating and manipulating values from an untyped json document.
 ## Features
 
 - Retrieving values from deeply nested json documents safely.
-- No error checking needed when properties does not exist.
+- Built-in type check functions and conversions.
 - Iterate over arrays and objects.
 - Supports GJSON syntax for navigating the json document.
 - Set or delete values in place.
@@ -34,23 +34,14 @@ v.Get("path.does.not.exist").Exists() // false
 
 It uses [GJSON syntax](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) for navigating the json document.
 
-The library uses Golang built-in json marshallers. In case you want to use a custom marshaller, you can use
-`jsonnav.From[T]()` or `jsonnav.FromAny()` by providing the actual value.
-
-```go
-v, err := jsonnav.From(map[string]any{"name": "John", "age": 30})
-v.IsObject() // true
-v.Get("name").String() // "John"
-```
-
 ### Accessing values that may not exist
 
-It's safe to access values that may not exist. The library will return a scalar with `nil` underlying value.
+It's safe to access values that may not exist. The library will return a scalar `Value` representation with `nil` underlying value.
 
 ```go
 v, err := jsonnav.Unmarshal(`{
-    "name":{"first":"Jimi","last":"Hendrix"},
-    "instruments":[{"name":"guitar"}]
+    "name": {"first":"Jimi", "last":"Hendrix"},
+    "instruments": [{"name": "guitar"}]
 }`)
 v.Get("birth").Get("date").Exists() // false
 v.Get("instruments").Array().At(0).Get("name").String() // "guitar"
@@ -69,6 +60,56 @@ v.Delete("age")
 
 v.Get("birth").Get("date").String()  // "1942-11-27"
 v.Get("name").Get("middle").String() // "Marshall"
+```
+
+### Type checks and conversions
+
+The library provides built-in functions for type checks and conversions that are safely free of errors and panics.
+
+#### Type check functions
+
+```go
+v, err := jsonnav.Unmarshal(`{"name":"Jimi","age":27}`)
+v.Get("name").IsString()     // true
+v.Get("age").IsFloat()       // true
+v.Get("age").IsBool()        // false
+v.Get("age").IsObject()      // false
+v.Get("age").IsArray()       // false
+v.Get("not_found").IsNull()  // true
+v.Get("not_found").IsEmpty() // true
+```
+
+#### Typed getters
+
+```go
+v, err := jsonnav.Unmarshal(`{
+    "name": "Jimi",
+    "age": 27,
+    "instruments": ["guitar"],
+    "hall_of_fame": true
+}`)
+v.Get("name").String()       // "Jimi"
+v.Get("age").Float()         // 27.0
+v.Get("hall_of_fame").Bool() // true
+v.Get("instruments").Array() // a slice of 1 Value with underlying value "guitar"
+```
+
+When the value doesn't match the expected type or it does not exist, it will default to a zero value of the
+expected type and do conversions for scalars.
+
+- `String()` returns the string representation of float and bool values, otherwise an empty string.
+- `Float()` returns the float representation of string values, for other types it returns 0.0.
+- `Bool()` returns the bool representation of string values, for other types it returns false.
+- `Array()` returns an empty slice for non-array values.
+
+### Parsing
+
+The library uses Golang built-in json marshallers. In case you want to use a custom marshaller, you can use
+`jsonnav.From[T]()` or `jsonnav.FromAny()` by providing the actual value.
+
+```go
+v, err := jsonnav.From(map[string]any{"name": "John", "age": 30})
+v.Get("name").String() // "John"
 ```
 
 ## License

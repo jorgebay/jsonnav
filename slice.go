@@ -10,54 +10,68 @@ type Slice []Value
 
 var _ Value = Slice{}
 
+// Exists returns true for slices.
 func (s Slice) Exists() bool {
 	return true
 }
 
+// IsEmpty returns true if the slice does not have any items.
 func (s Slice) IsEmpty() bool {
 	return len(s) == 0
 }
 
+// IsNull returns false for slices.
 func (s Slice) IsNull() bool {
 	return false
 }
 
+// IsArray returns true for slices.
 func (s Slice) IsArray() bool {
 	return true
 }
 
+// IsObject returns false for slices.
 func (s Slice) IsObject() bool {
 	return false
 }
 
+// IsString returns false for slices.
 func (s Slice) IsString() bool {
 	return false
 }
 
+// IsFloat returns false for slices.
 func (s Slice) IsFloat() bool {
 	return false
 }
 
+// IsBool returns false for slices.
 func (s Slice) IsBool() bool {
 	return false
 }
 
+// Bool returns false for slices.
 func (s Slice) Bool() bool {
 	return false
 }
 
+// Float returns 0 for slices.
 func (s Slice) Float() float64 {
 	return 0
 }
 
+// Int returns 0 for slices.
 func (s Slice) Int() int64 {
 	return 0
 }
 
+// String returns an empty string for slices.
 func (s Slice) String() string {
 	return ""
 }
 
+// At returns the value at the specified index.
+// If the index is out of range, it returns an scalar with an internal nil value.
 func (s Slice) At(index int) Value {
 	if index < 0 {
 		panic("index out of range")
@@ -69,6 +83,7 @@ func (s Slice) At(index int) Value {
 	return s[index]
 }
 
+// Value returns the inner values as a slice.
 func (s Slice) Value() any {
 	//	[]any, for JSON arrays
 	values := make([]any, 0, len(s))
@@ -79,6 +94,7 @@ func (s Slice) Value() any {
 	return values
 }
 
+// Get searches for the specified path within the slice.
 func (s Slice) Get(path string) Value {
 	if path == "#" {
 		return &scalar{v: len(s)}
@@ -142,6 +158,7 @@ func (s Slice) applyChildConditionPath(childPath string) Slice {
 	return newSlice
 }
 
+// Set sets the value at the specified path.
 func (s Slice) Set(path string, rawValue any) Value {
 	key, remainingPath, _ := strings.Cut(path, ".")
 
@@ -185,6 +202,7 @@ func (s Slice) Set(path string, rawValue any) Value {
 	return result
 }
 
+// Delete removes the value at the specified path.
 func (s Slice) Delete(path string) Value {
 	return s.Set(path, deleteValue)
 }
@@ -200,10 +218,12 @@ func growSliceIfNeeded(slice Slice, index int) Slice {
 	return slice
 }
 
+// Array returns the same instance.
 func (s Slice) Array() Slice {
 	return s
 }
 
+// Map returns an empty map for slices.
 func (s Slice) Map() map[string]Value {
 	return map[string]Value{}
 }

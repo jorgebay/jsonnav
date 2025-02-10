@@ -38,12 +38,15 @@ type Value interface {
 	IsBool() bool
 
 	// Bool returns a boolean representation.
+	// When the value is not a boolean scalar, it returns false.
 	Bool() bool
 
 	// Float returns a float64 representation.
+	// When the value is not a number scalar, it returns 0.
 	Float() float64
 
 	// Int returns an integer representation.
+	// When the value is not a number scalar, it returns 0.
 	Int() int64
 
 	// String returns a string representation of the value.

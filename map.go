@@ -132,6 +132,7 @@ func areEqualFromCondition(value any, expected string) bool {
 	return false
 }
 
+// Set updates the value at the specified path.
 func (m *Map) Set(path string, rawValue any) Value {
 	key, remainingPath, _ := strings.Cut(path, ".")
 	if remainingPath == "" {
@@ -147,6 +148,7 @@ func (m *Map) Set(path string, rawValue any) Value {
 	return m
 }
 
+// Delete removes the value at the specified path.
 func (m *Map) Delete(path string) Value {
 	return m.Set(path, deleteValue)
 }
@@ -180,10 +182,12 @@ func toJSONValue(rawValue any) any {
 	return rawValue
 }
 
+// Array returns an empty slice for maps.
 func (m *Map) Array() Slice {
 	return Slice{}
 }
 
+// Map returns the underlying map.
 func (m *Map) Map() map[string]Value {
 	newMap := make(map[string]Value, len(m.m))
 	for k, v := range m.m {
