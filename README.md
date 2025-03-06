@@ -36,16 +36,20 @@ It uses [GJSON syntax](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) f
 
 ### Accessing values that may not exist
 
-It's safe to access values that may not exist. The library will return a scalar `Value` representation with `nil` underlying value.
+It's safe to access values that may not exist. The library will return a scalar `Value` representation
+with `nil` underlying value.
 
 ```go
 v, err := jsonnav.Unmarshal(`{
-    "name": {"first":"Jimi", "last":"Hendrix"},
+    "name": {"first": "Jimi", "last": "Hendrix"},
     "instruments": [{"name": "guitar"}]
 }`)
 v.Get("birth").Get("date").Exists() // false
+v.Get("birth.date").Exists() // false
 v.Get("instruments").Array().At(0).Get("name").String() // "guitar"
+v.Get("instruments.0.name").String() // "guitar"
 v.Get("instruments").Array().At(1).Get("name").String() // ""
+v.Get("instruments.1.name").String() // ""
 ```
 
 ### Setting and deleting values
