@@ -142,6 +142,16 @@ func (s Slice) Get(path string) Value {
 		return newSlice
 	}
 
+	indexString, remainingPath, _ := strings.Cut(path, ".")
+	index, err := strconv.Atoi(indexString)
+	if err == nil && index >= 0 && index < len(s) {
+		result := s[index]
+		if remainingPath != "" {
+			return result.Get(remainingPath)
+		}
+		return result
+	}
+
 	// path is not supported on a slice
 	return undefinedScalar
 }

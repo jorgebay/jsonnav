@@ -77,6 +77,18 @@ func TestGet(t *testing.T) {
 		require.Equal(t, &scalar{v: "a"}, value.Get(`array.#(="a")`))
 	})
 
+	t.Run("should get array values using indices", func(t *testing.T) {
+		require.Equal(t, "a", value.Get("array.0").String())
+		require.Equal(t, "b", value.Get("array.1").String())
+		require.False(t, value.Get("array.2").Exists())
+		require.Equal(t, "", value.Get("array.2").String())
+		require.False(t, value.Get("array.-1").Exists())
+		require.False(t, value.Get("array.zzzz").Exists()) // not supported by slice
+		require.Equal(t, "Alice", value.Get("nestedArray.0.name").String())
+		require.Equal(t, "Bob", value.Get("nestedArray.1.name").String())
+		require.False(t, value.Get("nestedArray.2.name").Exists())
+	})
+
 	t.Run("should support nested get calls", func(t *testing.T) {
 		require.Equal(t, "John", value.Get("nestedObject").Get("name").String())
 		require.Equal(t, "Alice", value.Get("nestedArray").Get("#(name=Alice)").Get("name").String())
