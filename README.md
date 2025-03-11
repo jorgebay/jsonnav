@@ -3,23 +3,21 @@
 jsonnav is a [Go package](https://pkg.go.dev/github.com/jorgebay/jsonnav#section-documentation) for accessing,
 navigating and manipulating values from an untyped json document.
 
+[![Build](https://github.com/jorgebay/jsonnav/actions/workflows/test.yml/badge.svg)](https://github.com/jorgebay/jsonnav/actions/workflows/test.yml)
+
 ## Features
 
-- Retrieving values from deeply nested json documents safely.
+- Retrieve values from deeply nested json documents safely.
 - Built-in type check functions and conversions.
 - Iterate over arrays and objects.
-- Supports GJSON syntax for navigating the json document.
+- Supports [GJSON][gjson] syntax for navigating the json document.
 - Set or delete values in place.
-
-It supports retrieving deeply nested values safely, as well as iterating over arrays and objects.
 
 ## Installing
 
 ```shell
 go get github.com/jorgebay/jsonnav
 ```
-
-[![Build](https://github.com/jorgebay/jsonnav/actions/workflows/test.yml/badge.svg)](https://github.com/jorgebay/jsonnav/actions/workflows/test.yml)
 
 ## Usage
 
@@ -32,7 +30,7 @@ v.Get("path").Get("does").Get("not").Get("exist").Exists() // false
 v.Get("path.does.not.exist").Exists() // false
 ```
 
-It uses [GJSON syntax](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) for navigating the json document.
+It uses [GJSON syntax][gjson] for navigating the json document.
 
 ### Accessing values that may not exist
 
@@ -106,6 +104,31 @@ expected type and do conversions for scalars.
 - `Bool()` returns the bool representation of string values, for other types it returns false.
 - `Array()` returns an empty slice for non-array values.
 
+### Iterating over arrays
+
+You can iterate over arrays using the `Array()` method.
+
+```go
+v, err := jsonnav.Unmarshal(`{
+    "instruments": [
+        {"name": "guitar"},
+        {"name": "bass"}
+    ]
+}`)
+
+for _, instrument := range v.Get("instruments").Array() {
+    fmt.Println(instrument.Get("name").String())
+}
+```
+
+You can also collect internal properties of an array using `#` gjson wildcard.
+
+```go
+for _, instrumentName := range v.Get("instruments.#.name").Array() {
+    fmt.Println(instrumentName.String())
+}
+```
+
 ### Parsing
 
 The library uses Golang built-in json marshallers. In case you want to use a custom marshaller, you can use
@@ -119,3 +142,5 @@ v.Get("name").String() // "John"
 ## License
 
 jsonnav is distributed under [MIT License](https://opensource.org/license/MIT).
+
+[gjson]: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
